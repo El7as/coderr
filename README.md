@@ -35,12 +35,27 @@ It provides endpoints for managing offers, orders, and reviews, including a perm
 git clone <your-repository-url>
 cd coderr-backend
 
+---
+
 python -m venv env
 source env/bin/activate   # Windows: env\Scripts\activate
 
+---
+
 pip install -r requirements.txt
-python manage.py makemigrations 
+
+---
+
+python manage.py makemigrations
+
+---
+
 python manage.py migrate
+
+---
+
 python manage.py runserver
+
+---
 
 
