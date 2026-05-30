@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 
 
 from auth_app.models import Profile
@@ -134,13 +135,14 @@ class ProfileDetailView(generics.RetrieveUpdateAPIView):
             PermissionDenied: If the authenticated user attempts to
             update a profile that does not belong to them.
         """
-           
-        profile = super().get_object()
+        
+        pk = self.kwargs.get('pk')
+        profile = get_object_or_404(Profile, pk=pk)
 
         if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            if profile.id != self.request.user.id:
+            if profile.pk != self.request.user.pk:
                 raise PermissionDenied('You may only edit your own profile.')
-            return profile
+        return profile
    
 
 

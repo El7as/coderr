@@ -142,6 +142,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         
     user = serializers.IntegerField(source='id', read_only=True)
 
+
     class Meta:
         model = Profile
         fields = ['user', 'username', 'first_name', 'last_name', 'file', 'location', 'tel', 

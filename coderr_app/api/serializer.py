@@ -171,7 +171,7 @@ class OfferPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = ['title', 'image', 'description', 'details']
+        fields = ['id', 'title', 'image', 'description', 'details']
         
 
     def create(self, validated_data):
@@ -284,6 +284,11 @@ class OrderCreateSerializer(serializers.Serializer):
         Returns the validated data. The actual Order creation is handled in the view, not here.
         """
         return validated_data
+    
+    def validate_offer_detail_id(self, value):
+        if not isinstance(value, int):
+            raise serializers.ValidationError("A valid integer is required.")
+        return value
 
 
 

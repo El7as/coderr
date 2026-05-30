@@ -6,6 +6,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError, NotAuth
 
 from django.db import models
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 from auth_app.models import Profile
@@ -227,18 +228,14 @@ class OrderListView(generics.ListCreateAPIView):
         Creates an Order from a given offer_detail_id.
         """
         offer_detail_id = serializer.validated_data['offer_detail_id']
-
-        try:
-            offer_detail = OfferDetail.objects.get(id=offer_detail_id)
-        except OfferDetail.DoesNotExist:
-            raise ValidationError({'offer_detail_id': 'Invalid offer_detail_id.'})
+        offer_detail = get_object_or_404(OfferDetail, pk=offer_detail_id)
 
         order = Order.objects.create(customer_user=self.request.user, business_user=offer_detail.offer.user, title=offer_detail.title,
             revisions=offer_detail.revisions, delivery_time_in_days=offer_detail.delivery_time_in_days, price=offer_detail.price,
             features=offer_detail.features, offer_type=offer_detail.offer_type, status='in_progress')
 
-        output_serializer = OrderSerializer(order)
-        self.response_data = output_serializer.data
+        self.response_data = OrderSerializer(order).data
+
 
     def create(self, request, *args, **kwargs):
         """
@@ -405,6 +402,11 @@ class ReviewListCreateView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
     permission_classes = [IsCustomerReviewerorReadOnly]
     pagination_class = None
+
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = {'business_user_id': ['exact'], 'reviewer_id': ['exact']}
+    ordering_fields = ['updated_at', 'rating']
+    ordering = ['-updated_at']
 
 
     def perform_create(self, serializer):
