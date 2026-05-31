@@ -123,12 +123,27 @@ class OfferPatchSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get('description', instance.description)
         instance.save()
 
+        # for detail_data in details_data:
+        #     detail_id = detail_data.get('id')
+        #     if detail_id:
+        #         detail = OfferDetail.objects.get(id=detail_id, offer=instance)
+        #         for attr, value, in detail_data.items():
+        #             setattr(detail, attr, value)
+        #         detail.save()
+        #     else:
+        #         OfferDetail.objects.create(offer=instance, **detail_data)
+        # return instance
+
         for detail_data in details_data:
-            detail_id = detail_data.get('id')
-            if detail_id:
-                detail = OfferDetail.objects.get(id=detail_id, offer=instance)
-                for attr, value, in detail_data.items():
-                    setattr(detail, attr, value)
+            offer_type = detail_data.get('offer_type')
+            if not offer_type:
+                continue
+
+            detail = OfferDetail.objects.filter(offer=instance, offer_type=offer_type).first()
+            if detail:
+                for attr, value in detail_data.items():
+                    if value is not None:
+                        setattr(detail, attr, value)
                 detail.save()
             else:
                 OfferDetail.objects.create(offer=instance, **detail_data)

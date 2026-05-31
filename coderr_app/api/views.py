@@ -131,7 +131,7 @@ class OfferListView(generics.ListCreateAPIView):
         offer = serializer.save()
         details_data = self.request.data.get('details', [])
         if len(details_data) < 3:
-            raise ValidationError('At least 3 offer details are required.')
+            raise ValidationError({'detail': 'At least 3 offer details are required.'})
 
         offer.min_price = min(d['price'] for d in details_data)
         offer.min_delivery_time = min(d['delivery_time_in_days'] for d in details_data)
