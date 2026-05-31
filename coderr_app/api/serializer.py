@@ -90,6 +90,12 @@ class OfferDetailPatchSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']
 
 
+    def validate(self, attrs):
+        if 'offer_type' not in attrs or not attrs.get('offer_type'):
+            raise serializers.ValidationError({'offer_type': 'This field is required for PATCH requests'})
+        return attrs
+
+
 
 class OfferPatchSerializer(serializers.ModelSerializer):
 
@@ -102,12 +108,31 @@ class OfferPatchSerializer(serializers.ModelSerializer):
     their own dedicated endpoints.
     """
         
-    details = OfferDetailPatchSerializer(many=True, read_only=True)
+    details = OfferDetailPatchSerializer(many=True)
       
 
     class Meta:
         model = Offer
         fields = ['id', 'title', 'image', 'description', 'details']
+
+
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop('details', [])
+        instance.title = validated_data.get('title', instance.title)
+        instance.image = validated_data.get('image', instance.image)
+        instance.description = validated_data.get('description', instance.description)
+        instance.save()
+
+        for detail_data in details_data:
+            detail_id = detail_data.get('id')
+            if detail_id:
+                detail = OfferDetail.objects.get(id=detail_id, offer=instance)
+                for attr, value, in detail_data.items():
+                    setattr(detail, attr, value)
+                detail.save()
+            else:
+                OfferDetail.objects.create(offer=instance, **detail_data)
+        return instance
            
 
 

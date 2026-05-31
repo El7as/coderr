@@ -93,6 +93,27 @@ class OfferListView(generics.ListCreateAPIView):
             qs = qs.filter(min_delivery_time__lte=max_delivery_time)
 
         return qs
+    
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as exc:
+            errors = exc.detail
+            normalized = {}
+
+            for field, value in errors.items():
+                if isinstance(value, list) and len(value) == 1:
+                    normalized[field] = value[0]
+                else:
+                    normalized[field] = value
+
+            return Response(normalized, status=400)
+        
+        self.perform_create(serializer)
+        return Response(self.response.data, status=201)
 
 
     def perform_create(self, serializer):
@@ -136,7 +157,15 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
         
     queryset = Offer.objects.all()
-    permission_classes = [IsAuthenticated, IsOfferOwner]
+
+
+    def get_permissions(self):
+        """
+        Dynamically assign permissions based on request method.
+        """
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsOfferOwner()]
 
 
     def get_serializer_class(self):
@@ -409,6 +438,32 @@ class ReviewListCreateView(generics.ListCreateAPIView):
     ordering = ['-updated_at']
 
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+        except ValidationError as exc:
+            errors = exc.detail
+
+            if isinstance(errors, list) and len(errors) == 1:
+                normalized = {'detail': errors[0]}
+            elif isinstance(errors, dict):
+                normalized = {}
+                for field, value in errors.items():
+                    if isinstance(value, list) and len(value) == 1:
+                        normalized[field] = value[0]
+                    else:
+                        normalized[field] = value
+            else:
+                normalized = {'detail': str(errors)}
+            return Response(normalized, status=status.HTTP_400_BAD_REQUEST)
+        
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
     def perform_create(self, serializer):
         reviewer = self.request.user
         business_user = serializer.validated_data['business_user']
@@ -481,8 +536,8 @@ class BaseInfoView(APIView):
         - Number of offers
     """
         
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [AllowAny]
+
 
     def get(self, request):
         review_count = Review.objects.count()
