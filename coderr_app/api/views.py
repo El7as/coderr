@@ -110,10 +110,10 @@ class OfferListView(generics.ListCreateAPIView):
                 else:
                     normalized[field] = value
 
-            return Response(normalized, status=400)
+            return Response(normalized, status=status.HTTP_400_BAD_REQUEST)
         
         self.perform_create(serializer)
-        return Response(self.response.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
     def perform_create(self, serializer):
@@ -188,6 +188,12 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    def destroy(self, request, *args, **kwargs):
+        offer = self.get_object()
+        self.perform_destroy(offer)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -437,7 +443,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
     ordering_fields = ['updated_at', 'rating']
     ordering = ['-updated_at']
 
-
+#------------------------------------------------
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
@@ -459,8 +465,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
             else:
                 normalized = {'detail': str(errors)}
             return Response(normalized, status=status.HTTP_400_BAD_REQUEST)
-        
-        self.perform_create(serializer)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

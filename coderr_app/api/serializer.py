@@ -276,7 +276,7 @@ class OrderSerializer(serializers.ModelSerializer):
     - Offer type and status
     - Creation and update timestamps
     """
-
+    
     price = serializers.FloatField(read_only=True)
 
 
