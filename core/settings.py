@@ -35,8 +35,11 @@ ALLOWED_HOSTS = [
 if os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
     ALLOWED_HOSTS.append(os.environ["RENDER_EXTERNAL_HOSTNAME"])
 
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
 ]
 
 
