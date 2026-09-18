@@ -28,7 +28,6 @@ staticfiles/
 static/
 
 # Migrations (optional – wenn du sie NICHT tracken willst)
-*/migrations/*
 !*/migrations/__init__.py
 
 # --- IDEs & Editor ---
