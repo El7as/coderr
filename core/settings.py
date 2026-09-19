@@ -43,6 +43,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://coderrfrontend.onrender.com",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://coderrfrontend.onrender.com",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "auth_app.Profile"
 
